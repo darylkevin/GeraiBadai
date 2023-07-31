@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html xmlns:th=http://www.thymeleaf.org>
+<head>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.12.9/dist/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+<title>Gerai Badai</title>
+</head>
+<style>
+.bottom-links {
+  position: fixed;
+  bottom: 50px;
+  left: 0;
+  right: 0;
+  text-align: center;
+}
+</style>
+<body style="background-color:FloralWhite">
+
+<div align = "center">
+	<h2>My Current Listings</h2>
+	<hr><br><br>
+	
+	<div th:if="${products.empty}">
+		<span> Have things to sell? Add products and they will show here! </span>
+	</div>
+	
+	<div th:if="${!products.empty}" style="overflow-y:scroll; height:500px;">
+	
+	<div align="right" style="width: 78%;">
+		<span th:text="'Live	' + ${liveCount}"></span><br>
+		<span th:text="'Private	' + ${privateCount}"></span><br>
+		<span th:text="'Requests	' + ${requests}"></span><br>
+	</div>
+	
+	<br><br>
+	<table id="product-table" class="table table-striped table-bordered">
+		
+		<thead>
+		  <tr>
+		    <th scope="col" data-sort="time">Last Updated<i class="fas fa-sort ml-2"></i></th>
+		    <th scope="col" data-sort="name">Name<i class="fas fa-sort ml-2"></i></th>
+		    <th scope="col" data-sort="category">Category<i class="fas fa-sort ml-2"></i></th>
+		    <th scope="col" data-sort="description">Description<i class="fas fa-sort ml-2"></i></th>
+		    <th scope="col" data-sort="cost">Cost of Goods<i class="fas fa-sort ml-2"></i></th>
+		    <th scope="col" data-sort="price">Listing Price<i class="fas fa-sort ml-2"></i></th>
+		    <th scope="col" data-sort="stock">Stock<i class="fas fa-sort ml-2"></i></th>
+		    <th scope="col" data-sort="requests">Requests<i class="fas fa-sort ml-2"></i></th>
+		    <th scope="col" data-sort="type">Type<i class="fas fa-sort ml-2"></i></th>
+		    <th scope="col" data-sort="status">Status<i class="fas fa-sort ml-2"></i></th>
+		    <th scope="col">Action</th>
+		  </tr>
+		</thead>
+		
+		<tbody>
+		<tr th:each="product : ${products}">
+		<td th:text="${product.productCreationTime}" /></td>
+		<td th:text="${product.name}" /></td>
+		<td th:text="${product.category.name}" /></td>
+		<td th:text="${product.description}"/></td>
+		<td th:text="${product.cost}"/></td>
+		<td th:text="${product.price}"/></td>
+		<td>
+			<span th:if="${product.stock == ''}">N/A</span>
+			<span th:text="${product.stock}"></span>
+		</td>
+		<td th:text="${product.requests}" /></td>
+		<td th:text="${product.type.onDemand} ? 'On-Demand' : 'Stock-based'" /></td>
+		<td th:text="${product.status.live} ? 'Live' : 'Private'" /></td>
+		<td style="white-space: nowrap;">
+		<div align="center">
+			<form method="post" th:action="@{'/mp/current_listings/'+${product.productId}}" style="display: inline-block;">
+			  <input type="submit" name="delete" value="Delete" onclick="return confirm('Deleting a product would affect all associated order baskets and active orders, including those that have been fulfilled or cancelled. Are you sure you want to continue deleting this product?');">
+			</form>
+			<form method="post" th:action="@{'/mp/current_listings/edit/'+${product.productId}}" style="display: inline-block;">
+				<input type="submit" value="Edit">
+			</form>
+		</div>
+		</td>
+		</tr>
+		</tbody>
+		
+		</table>
+	</div>
+</div>
+
+
+<div class="bottom-links">
+
+	<!-- Display success deletion message -->
+    <div th:if="deleteAcknowledgement" align="center" style="color: green;">
+    <p th:text="${deleteAcknowledgement}"></p>
+    </div>
+    
+    <!-- Display success edition message -->
+    <div th:if="editAcknowledgement" align="center" style="color: green;">
+    <p th:text="${editAcknowledgement}"></p>
+    </div>
+
+	<nav class="navbar navbar-expand-lg navbar-light bg-light fixed-bottom">
+	  <div class="container">
+	    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav"
+	      aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+	      <span class="navbar-toggler-icon"></span>
+	    </button>
+	    <div class="collapse navbar-collapse" id="navbarNav">
+	      <ul class="navbar-nav mr-auto">
+	        <li class="nav-item">
+	          <a class="nav-link active" th:href="@{'/mp/current_listings'}">Current Listings</a>
+	        </li>
+	        <li class="nav-item">
+	          <a class="nav-link" th:href="@{'/mp/add_products'}">Add Products</a>
+	        </li>
+	        <li class="nav-item">
+	          <a class="nav-link" th:href="@{'/mp/set_categories'}">Set Categories</a>
+	        </li>
+	      </ul>
+	      <div class="navbar-nav ml-auto">
+	        <a class="nav-item nav-link" th:href="@{/action}">Back to Action</a>
+	      </div>
+	    </div>
+	  </div>
+	</nav>
+</div>
+<script>
+  $(document).ready(function() {
+    // Add click event listener to all header cells with data-sort attribute
+    $('th[data-sort]').click(function() {
+      // Get the column index and sort direction from the data-sort attribute
+      var colIndex = $(this).index();
+      var sortDirection = $(this).attr('data-sort');
+
+      // Set the sort icon based on the current sort direction
+      if (sortDirection === 'asc') {
+        $(this).attr('data-sort', 'desc');
+        $(this).find('i').removeClass('fa-sort-up').addClass('fa-sort-down');
+      } else {
+        $(this).attr('data-sort', 'asc');
+        $(this).find('i').removeClass('fa-sort-down').addClass('fa-sort-up');
+      }
+
+      // Get the table rows and convert them to an array
+      var rows = Array.prototype.slice.call($('#product-table tbody tr'));
+
+      // Sort the rows based on the selected column and sort direction
+      rows.sort(function(a, b) {
+        var valA = $(a).find('td:nth-child(' + (colIndex + 1) + ')').text();
+        var valB = $(b).find('td:nth-child(' + (colIndex + 1) + ')').text();
+
+        if (sortDirection === 'asc') {
+          return valA.localeCompare(valB);
+        } else {
+          return valB.localeCompare(valA);
+        }
+      });
+
+      // Append the sorted rows to the table
+      $.each(rows, function(index, row) {
+        $('#product-table tbody').append(row);
+      });
+    });
+  });
+</script>
+</body>
+</html>

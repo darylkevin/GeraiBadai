@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html xmlns:th=http://www.thymeleaf.org>
+<head>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.12.9/dist/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+<style>
+.bottom-links {
+  position: fixed;
+  bottom: 50px;
+  left: 0;
+  right: 0;
+  text-align: center;
+}
+</style>
+<title>Gerai Badai</title>
+
+</head>
+
+<body style="background-color:FloralWhite">
+<div align = "center">
+	<h2>Order Queue</h2>
+	<hr><br><br>
+	
+	<div th:if="${orders.empty}" align="centre">
+		<span> Orders that you have registered will show here. Time to make some money! </span>
+	</div>
+	
+	<div th:if="${!orders.empty}" align="centre">
+	
+		<form method="post" action="/io/view_orders">
+		    <select name="orderState" required>
+		        <option value="" selected disabled hidden="hidden">Filter Orders</option>
+		        <option value="-1" th:selected="${orderState == -1}">All Orders</option>
+		        <option value="0" th:selected="${orderState == 0}">Pending Orders</option>
+		        <option value="1" th:selected="${orderState == 1}">Fulfilled Orders</option>
+		        <option value="2" th:selected="${orderState == 2}">Cancelled Orders</option>
+		    </select>
+		    <input type="submit" name="select" value="Select">
+		    <br>
+		</form>
+
+    	<div align="right" style="width: 78%;">
+			<span th:text="'Pending	' + ${pendingCount}"></span><br>
+			<span th:text="'Fulfilled	' + ${fulfilledCount}"></span><br>
+			<span th:text="'Cancelled	' + ${cancelledCount}"></span><br>
+		</div>
+		
+		<br>
+		
+        <div style="overflow-y:scroll; height:500px;">
+	
+		<table class="table table-striped table-bordered">
+		
+		<thead>
+		<tr align="center"> 
+		<th scope="col">ID</th>
+		<th scope="col">Order Time</th>
+		<th scope="col">Customer Name</th>
+		<th scope="col">Phone Number</th>
+		<th scope="col">Shipping Address</th>
+		<th scope="col">Order Basket</th>
+		<th scope="col">Special Requests</th>
+		<th scope="col">Collection Method</th>
+		<th scope="col">Collection Period</th>
+		<th scope="col">Amount Paid</th>
+		<th scope="col">State</th>
+		<th scope="col">Action</th>
+		
+		</tr>
+		</thead>
+		
+		<tbody>
+		<tr th:each="order : ${orders}">
+		<td th:text="${order.orderId}" /></td>
+		<td th:text="${order.orderCreationTime}" /></td>
+		<td th:text="${order.customerName}" /></td>
+		<td th:text="${order.phoneNumber}" /></td>
+		<td th:text="${order.shippingAddress}"/></td>
+		<td th:text="${order.orderBasket.basketName}"/></td>
+		<td th:text="${order.specialRequests}"/></td>
+		<td th:text="${order.collectionMethod.how} ? 'Pick-Up' : 'Delivery'" /></td>
+		<td th:text="${order.collectionPeriod}" /></td>
+		<td th:text="${order.amountPaid}" /></td>
+		<td>
+			<span th:if="${order.orderState} eq 0">Pending</span>
+			<span th:if="${order.orderState} eq 1">Fulfilled</span>
+			<span th:if="${order.orderState} eq 2">Cancelled</span>
+		</td>
+		<td th:if="${order.orderState} eq 0" style="white-space: nowrap;">
+		<div align="center">
+			<form method="post" th:action="@{'/io/view_orders/fulfil/'+${order.orderId}}" style="display: inline-block;">
+				<input type="submit" name="fulfil" value="Fulfil">
+			</form>
+			
+			<form method="post" th:action="@{'/io/view_orders/cancel/'+${order.orderId}}" style="display: inline-block;">
+				<input type="submit" name="cancel" value="Cancel">
+			</form>
+			
+			<form method="post" th:action="@{'/io/view_orders/delete/'+${order.orderId}}" style="display: inline-block;">
+				<input type="submit" name="delete" value="Delete">
+			</form>
+			
+			<form method="post" th:action="@{'/io/view_orders/edit/'+${order.orderId}}" style="display: inline-block;">
+				<input type="submit" name="edit" value="Edit">
+			</form>
+		</div>
+		</td>
+		<td th:if="${order.orderState} ne 0" style="white-space: nowrap;">
+		<div align="center">
+			<form method="post" th:action="@{'/io/view_orders/undo/'+${order.orderId}}" style="display: inline-block;">
+				<input type="submit" name="undo" value="Undo Order">
+			</form>
+		</div>
+		</td>
+		</tr>
+		</tbody>
+		
+		</table>
+	</div>
+
+	<br><br>
+	
+</div>
+
+<div class="bottom-links">
+	
+    <div th:if="noPendingOrders" style="color: red;">
+    <p th:text="${noPendingOrders}"></p>
+    </div>
+    
+    <div th:if="noFulfilledOrders" style="color: red;">
+    <p th:text="${noFulfilledOrders}"></p>
+    </div>
+    
+	<div th:if="noCancelledOrders" style="color: red;">
+    <p th:text="${noCancelledOrders}"></p>
+    </div>
+   
+    <div th:if="fulfilAcknowledgement" style="color: green;">
+    <p th:text="${fulfilAcknowledgement}"></p>
+    </div>
+	
+	<div th:if="notEnoughStockAcknowledgement" style="color: red;">
+    <p th:text="${notEnoughStockAcknowledgement}"></p>
+    </div>
+	
+	<div th:if="cancelAcknowledgement" style="color: green;">
+    <p th:text="${cancelAcknowledgement}"></p>
+    </div>
+    
+    <div th:if="deleteAcknowledgement" style="color: green;">
+    <p th:text="${deleteAcknowledgement}"></p>
+    </div>
+    
+    <div th:if="editAcknowledgement" style="color: green;">
+    <p th:text="${editAcknowledgement}"></p>
+    </div>
+	
+    <nav class="navbar navbar-expand-lg navbar-light bg-light fixed-bottom">
+        <div class="container">
+            <div class="navbar-nav mr-auto">
+                <a class="nav-item nav-link active" th:href="@{'/io/view_orders'}">View Orders</a>
+                <a class="nav-item nav-link" th:href="@{'/io/add_orders'}">Add Orders</a>
+                <a class="nav-item nav-link" th:href="@{'/io/order_baskets'}">Order Baskets</a>
+                <a class="nav-item nav-link" th:href="@{'/io/new_basket'}">New Basket</a>
+            </div>
+            <div class="navbar-nav ml-auto">
+                <a class="nav-item nav-link" th:href="@{/action}">Back to Action</a>
+            </div>
+        </div>
+    </nav>
+</div>
+
+</body>
+</html>

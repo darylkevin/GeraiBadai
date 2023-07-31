@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html xmlns:th=http://www.thymeleaf.org>
+<head>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.12.9/dist/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+<title>Gerai Badai</title>
+<style>
+input[type="text"], input[type="number"], textarea {
+  width: 100%;
+}
+select {
+  width: 100%;
+}	
+.form {
+  display: flex;
+  justify-content: center;
+}
+.bottom-links {
+  position: fixed;
+  bottom: 50px;
+  left: 0;
+  right: 0;
+  text-align: center;
+}
+</style>
+</head>
+<body style="background-color:FloralWhite">
+
+	<h2 align="center" th:text="'Edit Product for ID: ' + ${product.productId}"></h2>
+	<hr><br><br>
+	<div class="form">
+	
+		<form method="post" th:action="@{'/mp/current_listings/'+${product.productId}}">
+			<label for="name">Name</label>
+			<input id="name" name="name" type="text" th:value="${product.name}" required><br>
+			
+			<label for="category">Category</label>
+			<select name="categoryName" required>
+	            <option th:each="c : ${categories}"
+	                    th:value="${c.name}"
+	                    th:text="${c.name}"
+	                    th:selected="${product.category.name == c.name}">
+	            </option>
+	        </select><br>
+	        <a th:href="@{/mp/set_categories}">+ New Category</a>
+	        <br>
+	        
+			<label for="description">Description</label><br>
+			<textarea name="description" th:field="${product.description}" placeholder="Enter Product Description" rows="3" cols="50" maxlength="1000"></textarea><br>
+			<small><span id="description-counter">0</span>/1000</small><br>
+			 
+			<label for="cost">Cost of Goods</label><br>
+			<input name="cost" type="number" th:value="${product.cost}" pattern="[0-9]+(\.[0-9]{1,2})?" placeholder="Rp. XXX.XXX,XX" min="0" max="10000000000" required><br>
+			
+			<label for="price">Listing Price</label><br>
+			<input name="price" type="number" th:value="${product.price}" pattern="[0-9]+(\.[0-9]{1,2})?" placeholder="Rp. XXX.XXX,XX" min="0" max="10000000000" required><br>
+			
+			
+			<label for="type">Type</label><br>
+			<input type="radio" name="typeBool" id="type" value=true th:checked="${product.type.onDemand}"><label>On-Demand</label>&nbsp;&nbsp;
+			<input type="radio" name="typeBool" id="stock-radio" value=false th:checked="${!product.type.onDemand}"><label>Stock-based</label>&nbsp;&nbsp;<br>
+				
+			<label for="status">Status</label><br>
+			<input type="radio" name="statusBool" id="status" value=true th:checked="${product.status.live}"><label>Live</label>&nbsp;&nbsp;
+			<input type="radio" name="statusBool" id="status" value=false th:checked="${!product.status.live}"><label>Private</label>&nbsp;&nbsp;<br>
+			
+			
+			<label for="stock" id="label-input" style="display: none;" onkeydown="return event.keyCode !== 69" />Stock</label>
+			<input type="number" id="stock-input" name="stock" th:value=${product.stock} min="0" max="1000000000" style="display: none;"><br><br>
+			<div class="form">
+				<input type="submit" name="edit" value="Save">&nbsp;&nbsp;&nbsp;
+				<a th:href="@{/mp/current_listings}">
+				   <input type="button" value="Cancel" />
+				</a>
+			</div>		
+		</form>
+		
+	</div>
+
+<br>
+<div align = "center">
+	<!-- Display error message if failed to edit -->
+	<div th:if="${editFailed}" style="color: red;">
+    	<p th:text="${editFailed}"></p>
+    </div>
+
+</div>
+
+<div class="bottom-links">
+
+	<nav class="navbar navbar-expand-lg navbar-light bg-light fixed-bottom">
+	  <div class="container">
+	    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav"
+	      aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+	      <span class="navbar-toggler-icon"></span>
+	    </button>
+	    <div class="collapse navbar-collapse" id="navbarNav">
+	      <ul class="navbar-nav mr-auto">
+	        <li class="nav-item">
+	          <a class="nav-link" th:href="@{'/mp/current_listings'}">Current Listings</a>
+	        </li>
+	        <li class="nav-item">
+	          <a class="nav-link active" th:href="@{'/mp/add_products'}">Add Products</a>
+	        </li>
+	        <li class="nav-item">
+	          <a class="nav-link" th:href="@{'/mp/set_categories'}">Set Categories</a>
+	        </li>
+	      </ul>
+	      <div class="navbar-nav ml-auto">
+	        <a class="nav-item nav-link" th:href="@{/action}">Back to Action</a>
+	      </div>
+	    </div>
+	  </div>
+	</nav>
+</div>
+
+<script>
+function handleRadioChange(event) {
+	  const stockInput = document.getElementById('stock-input');
+	  if (event.target.value === 'false') {
+	    stockInput.style.display = 'block';
+	    labelInput.style.display = 'block';
+	    stockInput.setAttribute('required', '');
+	  } else {
+	    stockInput.style.display = 'none';
+	    labelInput.style.display = 'none';
+	    stockInput.removeAttribute('required');
+	    if (stockInput.value === '') {
+	      stockInput.value = 'N/A'; // Set the value to "N/A" if "On-Demand" is selected and the input field is empty
+	    }
+	  }
+	}
+
+	const stockRadio = document.getElementById('stock-radio');
+	const radios = document.querySelectorAll('input[name="typeBool"]');
+	const stockInput = document.getElementById('stock-input');
+	const labelInput = document.getElementById('label-input');
+
+	radios.forEach(radio => radio.addEventListener('change', handleRadioChange));
+
+	document.addEventListener('DOMContentLoaded', () => {
+	  if (stockRadio.checked) {
+	    handleRadioChange({ target: stockRadio });
+	  }
+	});
+
+	//Clear stock values every time a new product is listed
+	const form = document.querySelector('form');
+	form.addEventListener('submit', (event) => {
+	  if (stockInput.style.display === 'none') {
+	    stockInput.value = ''; // Clear the value of the stock input field
+	  }
+	});
+	
+  // Get the description textarea element
+  var descriptionElement = document.querySelector('textarea[name="description"]');
+
+  // Add an event listener to the form submit event
+  document.querySelector('form').addEventListener('submit', function() {
+    // Check if the description element is empty
+    if (descriptionElement.value.trim() === '') {
+      // If it's empty, set its value to "N/A"
+      descriptionElement.value = 'N/A';
+    }
+  });
+  
+	const description = document.querySelector('textarea[name="description"]');
+	const counter = document.querySelector('#description-counter');
+	
+	// Initialize the character count when the page is loaded
+	counter.textContent = description.value.length;
+	
+	description.addEventListener('input', () => {
+	  const length = description.value.length;
+	  counter.textContent = length;
+	});
+</script>
+</body>
+</html>

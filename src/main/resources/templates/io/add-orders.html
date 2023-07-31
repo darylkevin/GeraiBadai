@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html xmlns:th=http://www.thymeleaf.org>
+<head>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.12.9/dist/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+<title>Gerai Badai</title>
+</head>
+<style>
+input[type="text"], input[type="number"], input[type="tel"], input[type="datetime-local"], textarea {
+  width: 100%;
+}
+select {
+  width: 100%;
+}	
+.form {
+  display: flex;
+  justify-content: center;
+}
+.bottom-links {
+  position: fixed;
+  bottom: 50px;
+  left: 0;
+  right: 0;
+  text-align: center;
+}
+</style>
+<body style="background-color:FloralWhite">
+<div>
+	<h2 align="center">New Order</h2>
+	<hr><br>
+	
+	<div th:if="${orderBaskets.empty}" align="center">
+		<span> You don't have any order baskets now. Let's add some to get started! </span>
+	</div>
+	
+	<div th:if="${!orderBaskets.empty}" class="form">
+		<form method="post" action="/io/add_orders" th:object="${order}">
+			<label for="name">Customer Name</label>
+			<input id="name" type="text" th:field="*{customerName}" required><br>
+			
+			<label for="phoneNumber">Phone Number</label>
+			<input id="phoneNumber" type="tel" min="0" step="1" th:field="*{phoneNumber}" maxlength="15" required><br>
+			
+			<label for="shippingAddress">Shipping Address</label><br>
+			<textarea id="shippingAddress" name="shippingAddress" rows="3" cols="50" placeholder="Where should we ship this to? (You can leave this blank if it is a pickup order, it will default to &lt;PICK-UP IN STORE&gt;)." maxlength="1000" oninput="countChars('shippingAddress', 'shippingAddressCounter')"></textarea><br>
+			<small><span id="shippingAddressCounter">0</span>/1000</small><br>
+			
+			<label for="orderBasket">Order Basket</label>
+			<select name="orderBasketName" required>
+				<option value="" selected disabled hidden="hidden"></option>
+	            <option th:each="orderBasket : ${orderBaskets}"
+	                    th:value="${orderBasket.basketName}"
+	                    th:text="${orderBasket.basketName}">
+	            </option>
+	        </select><br>
+	        <a th:href="@{/io/new_basket}">+ New Basket</a>
+	        <br>
+	        
+			<label for="specialRequests">Special Requests</label><br>
+			<textarea th:field="*{specialRequests}" name="specialRequests" rows="3" cols="50" placeholder="Any special requests?" maxlength="1000" oninput="countChars('specialRequests', 'specialRequestsCounter')"></textarea><br>
+			<small><span id="specialRequestsCounter">0</span>/1000</small><br>
+			 
+			<label for="collectionMethod">Collection Method</label><br>
+			<input type="radio" name="cmBool" id="pickup" value=true checked="checked"><label>Pick-up</label>&nbsp;&nbsp;
+			<input type="radio" name="cmBool" id="delivery" value=false><label>Delivery</label>&nbsp;&nbsp;<br>
+			 
+			<label for="collectionPeriod">Collection Period</label><br>
+			<input type="datetime-local" name="collectionDate" id="collectionDate" th:field="*{collectionPeriod}"><br>
+			
+			<label for="amountPaid">Amount Paid</label><br>
+			<input type="text" th:field="*{amountPaid}" pattern="[0-9]+(\.[0-9]{1,2})?" placeholder="Rp. XXX.XXX,XX" min="0" max="10000000000" required><br>
+	
+			<br><br>
+	
+			<div class="form">
+				<input type="submit" name="push" value="Push Order!">
+			</div>		
+		</form>
+	</div>
+	<br><br>
+	
+</div>
+
+<div class="bottom-links">
+	
+	<!-- Display success message -->
+    <div th:if="successMessage" style="color: green;">
+    <p th:text="${successMessage}"></p>
+    </div>
+    
+    <nav class="navbar navbar-expand-lg navbar-light bg-light fixed-bottom">
+        <div class="container">
+            <div class="navbar-nav mr-auto">
+                <a class="nav-item nav-link" th:href="@{'/io/view_orders'}">View Orders</a>
+                <a class="nav-item nav-link active" th:href="@{'/io/add_orders'}">Add Orders</a>
+                <a class="nav-item nav-link" th:href="@{'/io/order_baskets'}">Order Baskets</a>
+                <a class="nav-item nav-link" th:href="@{'/io/new_basket'}">New Basket</a>
+            </div>
+            <div class="navbar-nav ml-auto">
+                <a class="nav-item nav-link" th:href="@{/action}">Back to Action</a>
+            </div>
+        </div>
+    </nav>
+</div>
+<script>
+	var now = new Date().toISOString().slice(0, 16);
+	document.getElementById('collectionDate').value = now;
+	document.getElementById('collectionDate').min = now.slice(0, 10) + "T00:00";
+	
+	var specialRequests = document.querySelector('textarea[name="specialRequests"]');
+	document.querySelector('form').addEventListener('submit', function() {
+	  if (specialRequests.value.trim() === '') {
+	    specialRequests.value = 'N/A';
+	  }
+	});
+
+    // get the collectionMethod radio button group and the shippingAddress textarea element
+    var collectionMethod = document.getElementsByName("cmBool");
+    var shippingAddress = document.getElementById("shippingAddress");
+
+    // add a change event listener to the collectionMethod radio button group
+    for (var i = 0; i < collectionMethod.length; i++) {
+        collectionMethod[i].addEventListener("change", function() {
+            // check if the "Delivery" option is selected
+            if (this.value === "false") {
+                // add the "required" attribute to the shippingAddress textarea
+                shippingAddress.required = true;
+            } else {
+                // remove the "required" attribute from the shippingAddress textarea
+                shippingAddress.required = false;
+            }
+        });
+    }
+    
+	function countChars(textareaId, counterId) {
+	  var textarea = document.getElementById(textareaId);
+	  var counter = document.getElementById(counterId);
+	  var count = textarea.value.length;
+	  counter.textContent = count;
+	}
+</script>
+</body>
+</html>
